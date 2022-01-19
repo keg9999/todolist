@@ -1,69 +1,76 @@
 const toDoForm = document.querySelector(".js-toDoForm"),
-    toDoInput = toDoForm.querySelector("input"),
-    toDoList = document.querySelector(".js-toDoList");
+toDoInput = toDoForm.querySelector("input"),
+toDoList = document.querySelector(".js-toDoList");
 
-const TODOS_LS = 'toDos';
+const TODOS_LS = "toDos";
 let toDos = [];
 
-
-function saveTodos(){   //toDos를 가져와서 로컬 스토리지에 저장
-    localStorage.setItem(TODOS_LS, JSON.stringify(toDos));
-                        //JSON.stringify: 자바 스크립트 object를 string으로 바꿔줌. (로컬 스토리지에는 string만 저장 할 수 있다)
-}
-
-function deleteToDo(event){
-    const btn = event.target;
+function deleteToDo(e){
+    const btn = e.target;
     const li = btn.parentNode;
-    toDoList.removeChild(li);   //HTML상에서 삭제하기
+    toDoList.removeChild(li);
     const cleanToDos = toDos.filter(function(toDo){
-        return toDo.id !== parseInt(li.id); //li의 id는 String이기 때문에 parseInt()를 사용하여 int로 바꾸어줌. 
-    })
+        return toDo.id !== parseInt(li.id);
+    });
     toDos = cleanToDos;
-    saveTodos();
-}
+    saveToDos();
+}; 
 
-function paintTodo(text){
+function saveToDos(){
+    localStorage.setItem(TODOS_LS, JSON.stringify(toDos));
+};
+
+function paintToDo(text){
     const li = document.createElement("li");
     const delBtn = document.createElement("button");
-    const span = document.createElement("span");
-    const newId = toDos.length + 1;
     delBtn.innerText = "❌";
     delBtn.addEventListener("click", deleteToDo);
-
+    const span = document.createElement("span");
+    const newId = toDos.length + 1;
     span.innerText = text;
     li.appendChild(span);
     li.appendChild(delBtn);
     li.id = newId;
-    toDoList.appendChild(li);
-
+    // toDoList.appendChild(li); 
+    // 원페이지에 스크롤 보이지 않게 하기 위해 숫자 제한 : 8개
+    if(newId < 9){
+        toDoList.appendChild(li);
+    }else{
+        alert("최대 8개까지 작성할 수 있습니다!")
+    }
     const toDoObj = {
         text: text,
         id: newId
     };
-    toDos.push(toDoObj);    //Array.push(): array안에 엘리먼트 하나를 넣음. 
-    saveTodos();
-}
+    // toDos.push(toDoObj);
+    // 원페이지에 스크롤 보이지 않게 하기 위해 숫자 제한 : 8개
+    if(newId < 9){
+        toDos.push(toDoObj);
+    }
+    saveToDos();
+};
 
-function handleSubmit(event){
-    event.preventDefault();
+function handleSubmit(e){
+    e.preventDefault();
     const currentValue = toDoInput.value;
-    paintTodo(currentValue);
-    toDoInput.value = "";   //엔터 누른후 텍스트 삭제
-}
+    paintToDo(currentValue);
+    // 엔터 누르면 input 안 초기화
+    toDoInput.value = "";
+};
 
-function loadTodos(){
-    const loadedToDos = localStorage.getItem(TODOS_LS); // 'toDos'키값을 가진 벨류들을 찾아온다. 
-    if(toDos !== null){
+function loadToDos(){
+    const loadedToDos = localStorage.getItem(TODOS_LS);
+    if(loadedToDos !== null){
         const parsedToDos = JSON.parse(loadedToDos);
         parsedToDos.forEach(function(toDo){
-            paintTodo(toDo.text)
+            paintToDo(toDo.text);
         });
-    };
+    }
 };
 
 function init(){
-    loadTodos();
-    toDoForm.addEventListener("submit", handleSubmit);
-}
+    loadToDos();
+    toDoForm.addEventListener("submit",handleSubmit);
+};
 
 init();
